@@ -1,0 +1,15 @@
+<!-- Header público (oculto nas rotas admin) -->
+@if (!isAdminRoute()) {
+  <app-header></app-header>
+}
+
+<!-- Conteúdo principal roteado -->
+<router-outlet></router-outlet>
+
+<!-- Footer público -->
+@if (!isAdminRoute()) {
+  <app-footer></app-footer>
+}
+
+<!-- Toasts globais -->
+<app-toast></app-toast>

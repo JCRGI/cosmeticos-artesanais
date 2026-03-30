@@ -1,0 +1,61 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+  <div class="container">
+    <!-- Logo -->
+    <a class="navbar-brand fw-bold text-primary" routerLink="/">
+      <i class="bi bi-flower1 me-2"></i>Cosméticos Artesanais
+    </a>
+
+    <!-- Botão mobile -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarMenu"
+      aria-controls="navbarMenu"
+      aria-expanded="false"
+      aria-label="Abrir menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Links de navegação -->
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+            Início
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/catalogo" routerLinkActive="active">
+            Catálogo
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/historico" routerLinkActive="active">
+            Meus Pedidos
+          </a>
+        </li>
+      </ul>
+
+      <!-- Carrinho -->
+      <button
+        class="btn btn-outline-primary position-relative"
+        (click)="abrirCarrinho()"
+        aria-label="Abrir carrinho">
+        <i class="bi bi-bag me-1"></i>
+        Carrinho
+        @if (carrinho.totalItens() > 0) {
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ carrinho.totalItens() }}
+          </span>
+        }
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar do carrinho -->
+<app-carrinho-sidebar
+  [aberto]="carrinhoAberto"
+  (fechar)="fecharCarrinho()">
+</app-carrinho-sidebar>

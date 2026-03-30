@@ -1,0 +1,111 @@
+<div class="container py-5">
+  <app-loading [visivel]="carregando()" mensagem="Carregando pedido..."></app-loading>
+
+  @if (!carregando()) {
+    @if (!pedido()) {
+      <div class="text-center py-5">
+        <i class="bi bi-x-circle text-danger fs-1 mb-3 d-block"></i>
+        <h4>Pedido não encontrado.</h4>
+        <a routerLink="/" class="btn btn-primary mt-3">Voltar ao início</a>
+      </div>
+    } @else {
+      <!-- Confirmação visual -->
+      <div class="text-center mb-5">
+        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+          style="width: 80px; height: 80px;">
+          <i class="bi bi-check-lg fs-1"></i>
+        </div>
+        <h1 class="fw-bold">Pedido realizado!</h1>
+        <p class="text-muted fs-5">
+          Obrigada pela sua compra. Você receberá atualizações por e-mail.
+        </p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-7">
+          <!-- Card do pedido -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+              <!-- Número e status -->
+              <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                  <p class="text-muted small mb-1">Número do pedido</p>
+                  <h5 class="fw-bold font-monospace">#{{ pedido()!.id.slice(0, 8).toUpperCase() }}</h5>
+                </div>
+                <span class="badge bg-{{ statusColors[pedido()!.status] }} fs-6 px-3 py-2">
+                  {{ statusLabels[pedido()!.status] }}
+                </span>
+              </div>
+
+              <!-- Itens -->
+              <h6 class="fw-semibold mb-3">Itens do pedido</h6>
+              @for (item of pedido()!.itens ?? []; track item.id) {
+                <div class="d-flex justify-content-between mb-2 small">
+                  <span>{{ item.quantidade }}× <strong>{{ item.produtoId }}</strong></span>
+                  <span>{{ item.precoUnitario * item.quantidade | currency:'BRL' }}</span>
+                </div>
+              }
+
+              <hr>
+
+              <!-- Valores -->
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="text-muted">Produtos</span>
+                <span>{{ pedido()!.valorProdutos | currency:'BRL' }}</span>
+              </div>
+              <div class="d-flex justify-content-between small mb-3">
+                <span class="text-muted">Frete ({{ pedido()!.metodoFrete }})</span>
+                <span>{{ pedido()!.valorFrete | currency:'BRL' }}</span>
+              </div>
+              <div class="d-flex justify-content-between fw-bold">
+                <span>Total</span>
+                <span class="text-primary">{{ pedido()!.valorTotal | currency:'BRL' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Previsão de entrega -->
+          <div class="card border-0 shadow-sm mb-4 border-start border-4 border-success">
+            <div class="card-body p-4">
+              <h6 class="fw-semibold mb-3">
+                <i class="bi bi-calendar-check me-2 text-success"></i>Previsão de entrega
+              </h6>
+              <p class="fs-5 fw-bold text-success mb-1">
+                {{ pedido()!.previsaoEntrega | date:'fullDate':'':'pt-BR' }}
+              </p>
+              <small class="text-muted">
+                Preparo: {{ pedido()!.slaPreparoDias }} dia(s) útil(eis) +
+                Frete {{ pedido()!.metodoFrete }}: {{ pedido()!.prazoFreteDias }} dia(s)
+              </small>
+            </div>
+          </div>
+
+          <!-- Endereço de entrega -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+              <h6 class="fw-semibold mb-2">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Endereço de entrega
+              </h6>
+              <p class="mb-0 text-muted small">
+                {{ pedido()!.enderecoEntrega.logradouro }}, {{ pedido()!.enderecoEntrega.numero }}
+                {{ pedido()!.enderecoEntrega.complemento ? '– ' + pedido()!.enderecoEntrega.complemento : '' }}<br>
+                {{ pedido()!.enderecoEntrega.bairro }} – {{ pedido()!.enderecoEntrega.cidade }}/{{ pedido()!.enderecoEntrega.estado }}<br>
+                CEP: {{ pedido()!.enderecoEntrega.cep }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Ações -->
+          <div class="d-flex gap-3">
+            <a routerLink="/" class="btn btn-outline-primary flex-grow-1">
+              <i class="bi bi-house me-1"></i>Voltar ao início
+            </a>
+            <a routerLink="/historico" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-clock-history me-1"></i>Ver meus pedidos
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,103 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <h1 class="fw-bold mb-2">Meus Pedidos</h1>
+      <p class="text-muted mb-4">
+        Informe seu CPF ou e-mail para consultar seu histórico de compras.
+      </p>
+
+      <!-- Campo de busca -->
+      <div class="card border-0 shadow-sm mb-4 p-4">
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-white">
+            <i class="bi bi-search text-primary"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control border-start-0"
+            placeholder="CPF (apenas números) ou e-mail"
+            [(ngModel)]="termoBusca"
+            (keydown)="onKeyEnter($event)">
+          <button
+            class="btn btn-primary px-4"
+            [disabled]="carregando()"
+            (click)="buscar()">
+            @if (carregando()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Buscar
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <app-loading [visivel]="carregando()" mensagem="Buscando pedidos..."></app-loading>
+
+      <!-- Sem resultados -->
+      @if (buscaRealizada() && !carregando() && pedidos().length === 0) {
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+          <h5>Nenhum pedido encontrado</h5>
+          <p>Verifique se o CPF ou e-mail está correto.</p>
+        </div>
+      }
+
+      <!-- Lista de pedidos -->
+      @if (pedidos().length > 0) {
+        <div class="d-flex flex-column gap-3">
+          @for (pedido of pedidos(); track pedido.id) {
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <!-- ID e data -->
+                  <div>
+                    <p class="fw-bold font-monospace mb-0">
+                      #{{ pedido.id.slice(0, 8).toUpperCase() }}
+                    </p>
+                    <small class="text-muted">
+                      {{ pedido.createdAt | date:'dd/MM/yyyy \'às\' HH:mm' }}
+                    </small>
+                  </div>
+                  <!-- Status badge -->
+                  <span class="badge bg-{{ statusColors[pedido.status] }} px-3 py-2">
+                    {{ statusLabels[pedido.status] }}
+                  </span>
+                </div>
+
+                <!-- Itens resumidos -->
+                @if (pedido.itens && pedido.itens.length > 0) {
+                  <p class="text-muted small mb-2">
+                    <i class="bi bi-box me-1"></i>
+                    {{ pedido.itens.length }} item(ns) ·
+                    @for (item of pedido.itens.slice(0, 2); track item.id) {
+                      {{ item.quantidade }}×{{ item.produtoId.slice(0, 8) }}
+                      @if (!$last) { , }
+                    }
+                    @if (pedido.itens.length > 2) { e mais... }
+                  </p>
+                }
+
+                <div class="d-flex justify-content-between align-items-center">
+                  <!-- Previsão de entrega -->
+                  <div class="small">
+                    @if (pedido.status === 'enviado' || pedido.status === 'em_preparo' || pedido.status === 'pago') {
+                      <i class="bi bi-calendar-check text-success me-1"></i>
+                      <span class="text-success fw-semibold">
+                        Previsão: {{ pedido.previsaoEntrega | date:'dd/MM/yyyy' }}
+                      </span>
+                    } @else if (pedido.status === 'entregue') {
+                      <i class="bi bi-check-circle text-success me-1"></i>
+                      <span class="text-success">Entregue</span>
+                    }
+                  </div>
+                  <!-- Total -->
+                  <span class="fw-bold text-primary">{{ pedido.valorTotal | currency:'BRL' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>

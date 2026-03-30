@@ -1,0 +1,144 @@
+<!-- Hero Section -->
+<section class="hero-section bg-primary text-white py-5">
+  <div class="container py-4">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6">
+        <h1 class="display-4 fw-bold mb-3">
+          Cosméticos Artesanais<br>
+          <span class="text-warning">feitos com amor</span>
+        </h1>
+        <p class="lead mb-4 opacity-90">
+          Cremes e hidratantes naturais, produzidos sob encomenda ou diretamente do nosso estoque.
+          Sua pele merece o melhor da natureza.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a routerLink="/catalogo" class="btn btn-warning btn-lg fw-semibold">
+            <i class="bi bi-bag me-2"></i>Ver Catálogo
+          </a>
+          <a routerLink="/catalogo" [queryParams]="{tipo:'personalizado'}" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-palette me-2"></i>Produto Personalizado
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center">
+        <i class="bi bi-flower1 text-warning" style="font-size: 10rem; opacity: 0.8;"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefícios -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-leaf fs-1 text-success mb-3 d-block"></i>
+          <h5 class="fw-bold">100% Natural</h5>
+          <p class="text-muted small">Ingredientes selecionados da natureza, sem conservantes artificiais.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-magic fs-1 text-primary mb-3 d-block"></i>
+          <h5 class="fw-bold">Personalizado</h5>
+          <p class="text-muted small">Manipulamos sob encomenda conforme suas necessidades específicas.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-4">
+          <i class="bi bi-truck fs-1 text-warning mb-3 d-block"></i>
+          <h5 class="fw-bold">Entrega Rápida</h5>
+          <p class="text-muted small">Calculamos frete em tempo real e informamos a previsão exata de entrega.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Produtos em Destaque -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Produtos em Destaque</h2>
+      <a routerLink="/catalogo" class="btn btn-outline-primary btn-sm">
+        Ver todos <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+
+    <app-loading [visivel]="carregando()" mensagem="Carregando produtos..."></app-loading>
+
+    @if (!carregando()) {
+      @if (destaques().length === 0) {
+        <div class="text-center text-muted py-5">
+          <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
+          <p>Nenhum produto disponível no momento.</p>
+        </div>
+      } @else {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+          @for (produto of destaques(); track produto.id) {
+            <div class="col">
+              <div class="card h-100 border-0 shadow-sm produto-card">
+                <!-- Imagem -->
+                <a [routerLink]="['/produto', produto.id]">
+                  <img
+                    [src]="produto.imagens[0] || 'assets/placeholder.jpg'"
+                    [alt]="produto.nome"
+                    class="card-img-top"
+                    style="height: 200px; object-fit: cover;">
+                </a>
+
+                <!-- Badge de tipo -->
+                <div class="position-absolute top-0 end-0 m-2">
+                  @if (produto.tipo === 'personalizado') {
+                    <span class="badge bg-warning text-dark">Personalizado</span>
+                  } @else if ((produto.estoqueQuantidade ?? 0) <= 5) {
+                    <span class="badge bg-danger">Últimas unidades</span>
+                  }
+                </div>
+
+                <div class="card-body d-flex flex-column">
+                  <h6 class="card-title fw-semibold">{{ produto.nome }}</h6>
+                  <p class="card-text text-muted small flex-grow-1">
+                    {{ produto.descricao | slice:0:80 }}{{ produto.descricao.length > 80 ? '...' : '' }}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="fw-bold text-primary fs-5">
+                      {{ produto.preco | currency:'BRL' }}
+                    </span>
+                    @if (produto.tipo === 'estoque') {
+                      <button
+                        class="btn btn-primary btn-sm"
+                        (click)="adicionarAoCarrinho(produto)">
+                        <i class="bi bi-bag-plus me-1"></i>Adicionar
+                      </button>
+                    } @else {
+                      <a
+                        [routerLink]="['/produto', produto.id]"
+                        class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-palette me-1"></i>Personalizar
+                      </a>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</section>
+
+<!-- CTA Personalização -->
+<section class="py-5 bg-primary text-white">
+  <div class="container text-center py-3">
+    <h2 class="fw-bold mb-3">Quer um produto feito só para você?</h2>
+    <p class="lead mb-4 opacity-90">
+      Manipulamos cremes e hidratantes com a fórmula ideal para o seu tipo de pele.
+    </p>
+    <a routerLink="/catalogo" [queryParams]="{tipo:'personalizado'}" class="btn btn-warning btn-lg fw-semibold">
+      <i class="bi bi-magic me-2"></i>Criar Meu Produto
+    </a>
+  </div>
+</section>

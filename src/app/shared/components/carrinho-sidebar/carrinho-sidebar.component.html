@@ -1,0 +1,100 @@
+<!-- Overlay -->
+@if (aberto) {
+  <div class="offcanvas-backdrop fade show" (click)="onFechar()"></div>
+}
+
+<!-- Drawer lateral -->
+<div
+  class="offcanvas offcanvas-end"
+  [class.show]="aberto"
+  tabindex="-1"
+  style="visibility: visible;"
+  aria-label="Carrinho de compras">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title fw-bold">
+      <i class="bi bi-bag me-2 text-primary"></i>Carrinho
+    </h5>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Fechar carrinho"
+      (click)="onFechar()">
+    </button>
+  </div>
+
+  <div class="offcanvas-body d-flex flex-column">
+    @if (carrinho.estaVazio()) {
+      <!-- Carrinho vazio -->
+      <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-muted">
+        <i class="bi bi-bag-x fs-1 mb-3"></i>
+        <p>Seu carrinho está vazio.</p>
+        <a routerLink="/catalogo" class="btn btn-outline-primary btn-sm" (click)="onFechar()">
+          Ver produtos
+        </a>
+      </div>
+    } @else {
+      <!-- Lista de itens -->
+      <div class="flex-grow-1 overflow-auto">
+        @for (item of carrinho.itens(); track item.produto.id) {
+          <div class="d-flex align-items-center gap-3 py-3 border-bottom">
+            <!-- Imagem -->
+            <img
+              [src]="item.produto.imagens[0] || 'assets/placeholder.jpg'"
+              [alt]="item.produto.nome"
+              class="rounded"
+              width="64"
+              height="64"
+              style="object-fit: cover;">
+
+            <!-- Detalhes -->
+            <div class="flex-grow-1 min-width-0">
+              <p class="fw-semibold mb-1 text-truncate">{{ item.produto.nome }}</p>
+              <p class="text-primary mb-1 small">
+                {{ item.produto.preco | currency:'BRL' }}
+              </p>
+
+              <!-- Controle de quantidade -->
+              <div class="d-flex align-items-center gap-2">
+                <button
+                  class="btn btn-outline-secondary btn-sm px-2 py-0"
+                  (click)="alterarQuantidade(item.produto.id, -1, item.quantidade)"
+                  aria-label="Diminuir quantidade">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <span class="fw-semibold">{{ item.quantidade }}</span>
+                <button
+                  class="btn btn-outline-secondary btn-sm px-2 py-0"
+                  (click)="alterarQuantidade(item.produto.id, +1, item.quantidade)"
+                  aria-label="Aumentar quantidade">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Remover -->
+            <button
+              class="btn btn-link text-danger p-0"
+              (click)="removerItem(item.produto.id)"
+              aria-label="Remover item">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Rodapé com total e checkout -->
+      <div class="border-top pt-3 mt-2">
+        <div class="d-flex justify-content-between fw-bold mb-3">
+          <span>Total</span>
+          <span class="text-primary">{{ carrinho.valorTotal() | currency:'BRL' }}</span>
+        </div>
+        <a
+          routerLink="/checkout"
+          class="btn btn-primary w-100"
+          (click)="onFechar()">
+          Finalizar Compra
+        </a>
+      </div>
+    }
+  </div>
+</div>

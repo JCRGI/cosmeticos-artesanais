@@ -1,0 +1,156 @@
+<div class="container py-5">
+  <app-loading [visivel]="carregando()" mensagem="Carregando produto..."></app-loading>
+
+  @if (!carregando()) {
+    @if (!produto()) {
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-box-seam fs-1 mb-3 d-block"></i>
+        <h5>Produto não encontrado.</h5>
+        <a routerLink="/catalogo" class="btn btn-outline-primary mt-3">Voltar ao catálogo</a>
+      </div>
+    } @else {
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/">Início</a></li>
+          <li class="breadcrumb-item"><a routerLink="/catalogo">Catálogo</a></li>
+          <li class="breadcrumb-item active">{{ produto()!.nome }}</li>
+        </ol>
+      </nav>
+
+      <div class="row g-5">
+        <!-- Galeria de imagens -->
+        <div class="col-lg-6">
+          <div class="mb-3 rounded overflow-hidden" style="height: 400px; background: #f8f9fa;">
+            <img
+              [src]="produto()!.imagens[imagemAtiva()] || 'assets/placeholder.jpg'"
+              [alt]="produto()!.nome"
+              class="w-100 h-100"
+              style="object-fit: cover;">
+          </div>
+          <!-- Thumbnails -->
+          @if (produto()!.imagens.length > 1) {
+            <div class="d-flex gap-2 flex-wrap">
+              @for (img of produto()!.imagens; track $index) {
+                <img
+                  [src]="img"
+                  [alt]="produto()!.nome + ' foto ' + ($index + 1)"
+                  class="rounded cursor-pointer border"
+                  [class.border-primary]="imagemAtiva() === $index"
+                  width="70"
+                  height="70"
+                  style="object-fit: cover; cursor: pointer;"
+                  (click)="selecionarImagem($index)">
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Detalhes e ação -->
+        <div class="col-lg-6">
+          <!-- Badge de tipo -->
+          @if (produto()!.tipo === 'personalizado') {
+            <span class="badge bg-warning text-dark mb-2">Sob Encomenda</span>
+          } @else {
+            <span class="badge bg-success mb-2">Em Estoque</span>
+          }
+
+          <h1 class="fw-bold mb-2">{{ produto()!.nome }}</h1>
+          <p class="fs-2 fw-bold text-primary mb-3">{{ produto()!.preco | currency:'BRL' }}</p>
+          <p class="text-muted mb-4">{{ produto()!.descricao }}</p>
+
+          <!-- Informações de prazo -->
+          <div class="card border-0 bg-light mb-4 p-3">
+            <div class="row g-3 text-center">
+              <div class="col-6">
+                <i class="bi bi-clock text-primary mb-1 d-block fs-4"></i>
+                <small class="text-muted">Preparo</small>
+                <p class="mb-0 fw-semibold">{{ produto()!.slaPreparo_dias }} dia(s) útil(eis)</p>
+              </div>
+              <div class="col-6">
+                <i class="bi bi-box-seam text-primary mb-1 d-block fs-4"></i>
+                <small class="text-muted">Peso</small>
+                <p class="mb-0 fw-semibold">{{ produto()!.pesoGramas }}g</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário de personalização -->
+          @if (produto()!.tipo === 'personalizado') {
+            <div class="mb-4">
+              <h5 class="fw-semibold mb-3">
+                <i class="bi bi-palette me-2 text-primary"></i>Personalização
+              </h5>
+              @for (campo of camposPersonalizacao; track campo.chave) {
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small">{{ campo.label }}</label>
+                  @if (campo.opcoes.length > 0) {
+                    <select
+                      class="form-select"
+                      [(ngModel)]="personalizacao[campo.chave]">
+                      <option value="">Selecione...</option>
+                      @for (opcao of campo.opcoes; track opcao) {
+                        <option [value]="opcao">{{ opcao }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <textarea
+                      class="form-control"
+                      rows="3"
+                      [placeholder]="'Descreva suas preferências para ' + campo.label.toLowerCase()"
+                      [(ngModel)]="personalizacao[campo.chave]">
+                    </textarea>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Quantidade e botão -->
+          <div class="d-flex gap-3 align-items-center mb-3">
+            <div class="input-group" style="width: 130px;">
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                (click)="quantidade = quantidade > 1 ? quantidade - 1 : 1">
+                <i class="bi bi-dash"></i>
+              </button>
+              <input
+                type="number"
+                class="form-control text-center"
+                [(ngModel)]="quantidade"
+                min="1"
+                max="99">
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                (click)="quantidade = quantidade + 1">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+
+            <button
+              class="btn btn-primary btn-lg flex-grow-1"
+              [disabled]="!podeAdicionarAoCarrinho()"
+              (click)="adicionarAoCarrinho()">
+              <i class="bi bi-bag-plus me-2"></i>
+              @if (produto()!.tipo === 'estoque' && (produto()!.estoqueQuantidade ?? 0) === 0) {
+                Produto Esgotado
+              } @else {
+                Adicionar ao Carrinho
+              }
+            </button>
+          </div>
+
+          <!-- Aviso para personalizado -->
+          @if (produto()!.tipo === 'personalizado') {
+            <div class="alert alert-info small">
+              <i class="bi bi-info-circle me-2"></i>
+              Este produto é manipulado sob encomenda. Preencha todas as opções acima antes de adicionar ao carrinho.
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

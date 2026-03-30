@@ -1,0 +1,130 @@
+<div class="container py-5">
+  <!-- Cabeçalho -->
+  <div class="mb-4">
+    <h1 class="fw-bold">Catálogo de Produtos</h1>
+    <p class="text-muted">Explore nossa linha de cosméticos artesanais naturais.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card border-0 shadow-sm mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <!-- Busca por nome -->
+      <div class="col-md-5">
+        <label class="form-label small fw-semibold">Buscar produto</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Nome ou descrição..."
+            [(ngModel)]="termoBusca"
+            (input)="aplicarFiltros()">
+        </div>
+      </div>
+
+      <!-- Filtro por tipo -->
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Tipo de produto</label>
+        <select
+          class="form-select"
+          [(ngModel)]="filtroTipo"
+          (change)="aplicarFiltros()">
+          <option value="">Todos os tipos</option>
+          <option value="estoque">Pronto para envio</option>
+          <option value="personalizado">Personalizado (sob encomenda)</option>
+        </select>
+      </div>
+
+      <!-- Limpar filtros -->
+      <div class="col-md-3">
+        <button class="btn btn-outline-secondary w-100" (click)="limparFiltros()">
+          <i class="bi bi-x-circle me-1"></i>Limpar filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado de carregamento -->
+  <app-loading [visivel]="carregando()" mensagem="Buscando produtos..."></app-loading>
+
+  @if (!carregando()) {
+    <!-- Contador de resultados -->
+    <p class="text-muted small mb-3">
+      {{ filtrados().length }} produto{{ filtrados().length !== 1 ? 's' : '' }} encontrado{{ filtrados().length !== 1 ? 's' : '' }}
+    </p>
+
+    @if (filtrados().length === 0) {
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-search fs-1 mb-3 d-block"></i>
+        <h5>Nenhum produto encontrado</h5>
+        <p>Tente ajustar os filtros ou limpar a busca.</p>
+        <button class="btn btn-outline-primary" (click)="limparFiltros()">
+          Ver todos os produtos
+        </button>
+      </div>
+    } @else {
+      <!-- Grid de produtos -->
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @for (produto of filtrados(); track produto.id) {
+          <div class="col">
+            <div class="card h-100 border-0 shadow-sm produto-card">
+              <!-- Imagem -->
+              <a [routerLink]="['/produto', produto.id]" class="position-relative d-block">
+                <img
+                  [src]="produto.imagens[0] || 'assets/placeholder.jpg'"
+                  [alt]="produto.nome"
+                  class="card-img-top"
+                  style="height: 200px; object-fit: cover;">
+
+                <!-- Badge de tipo -->
+                <div class="position-absolute top-0 end-0 m-2">
+                  @if (produto.tipo === 'personalizado') {
+                    <span class="badge bg-warning text-dark">Personalizado</span>
+                  } @else {
+                    <span class="badge bg-success">Em estoque</span>
+                  }
+                </div>
+              </a>
+
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title fw-semibold">
+                  <a [routerLink]="['/produto', produto.id]" class="text-decoration-none text-dark">
+                    {{ produto.nome }}
+                  </a>
+                </h6>
+                <p class="card-text text-muted small flex-grow-1">
+                  {{ produto.descricao | slice:0:90 }}{{ produto.descricao.length > 90 ? '...' : '' }}
+                </p>
+
+                <!-- Informação de prazo -->
+                <p class="text-muted small mb-2">
+                  <i class="bi bi-clock me-1"></i>
+                  Preparo: {{ produto.slaPreparo_dias }} dia{{ produto.slaPreparo_dias !== 1 ? 's' : '' }} útil{{ produto.slaPreparo_dias !== 1 ? 'eis' : '' }}
+                </p>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <span class="fw-bold text-primary fs-5">
+                    {{ produto.preco | currency:'BRL' }}
+                  </span>
+                  @if (produto.tipo === 'estoque') {
+                    <button
+                      class="btn btn-primary btn-sm"
+                      (click)="adicionarAoCarrinho(produto)"
+                      [disabled]="(produto.estoqueQuantidade ?? 0) === 0">
+                      <i class="bi bi-bag-plus me-1"></i>
+                      {{ (produto.estoqueQuantidade ?? 0) === 0 ? 'Esgotado' : 'Adicionar' }}
+                    </button>
+                  } @else {
+                    <a [routerLink]="['/produto', produto.id]" class="btn btn-outline-primary btn-sm">
+                      <i class="bi bi-palette me-1"></i>Personalizar
+                    </a>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

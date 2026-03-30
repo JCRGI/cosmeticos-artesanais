@@ -1,0 +1,205 @@
+<div class="container py-5">
+  <h1 class="fw-bold mb-4">
+    <i class="bi bi-bag-check me-2 text-primary"></i>Finalizar Compra
+  </h1>
+
+  <div class="row g-4">
+    <!-- Formulário -->
+    <div class="col-lg-8">
+      <form [formGroup]="form">
+
+        <!-- 1. Identificação -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">
+              <span class="badge bg-primary rounded-circle me-2">1</span>Seus dados
+            </h5>
+            <p class="text-muted small mb-3">
+              Use CPF ou e-mail para identificação. Na próxima compra, reconhecemos você automaticamente.
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">CPF</label>
+                <input type="text" class="form-control" formControlName="cpf"
+                  placeholder="000.000.000-00" maxlength="14">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">E-mail</label>
+                <input type="email" class="form-control" formControlName="email"
+                  placeholder="seu@email.com">
+                @if (form.get('email')?.invalid && form.get('email')?.touched) {
+                  <div class="text-danger small mt-1">E-mail inválido.</div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Nome completo <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="nome"
+                  placeholder="Seu nome">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Telefone / WhatsApp</label>
+                <input type="tel" class="form-control" formControlName="telefone"
+                  placeholder="(11) 9 0000-0000">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Endereço -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">
+              <span class="badge bg-primary rounded-circle me-2">2</span>Endereço de entrega
+            </h5>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">CEP <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <input type="text" class="form-control" formControlName="cep"
+                    placeholder="00000-000" maxlength="9">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    [disabled]="carregandoCep()"
+                    (click)="buscarCep()">
+                    @if (carregandoCep()) {
+                      <span class="spinner-border spinner-border-sm"></span>
+                    } @else {
+                      <i class="bi bi-search"></i>
+                    }
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label">Logradouro <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="logradouro">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Número <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="numero">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Complemento</label>
+                <input type="text" class="form-control" formControlName="complemento">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label">Bairro <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="bairro">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Cidade <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="cidade">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">UF <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="estado" maxlength="2">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Frete -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">
+              <span class="badge bg-primary rounded-circle me-2">3</span>Opções de frete
+            </h5>
+
+            <app-loading [visivel]="carregandoFrete()" tamanho="sm" mensagem="Calculando frete..."></app-loading>
+
+            @if (!carregandoFrete() && opcoesFreteDisp().length === 0) {
+              <p class="text-muted small">Preencha o CEP acima para ver as opções de entrega.</p>
+            }
+
+            @if (opcoesFreteDisp().length > 0) {
+              <div class="d-flex flex-column gap-2">
+                @for (opcao of opcoesFreteDisp(); track opcao.id) {
+                  <div
+                    class="border rounded p-3 cursor-pointer"
+                    [class.border-primary]="freteEscolhido()?.id === opcao.id"
+                    [class.bg-primary]="freteEscolhido()?.id === opcao.id"
+                    [class.bg-opacity-10]="freteEscolhido()?.id === opcao.id"
+                    style="cursor: pointer;"
+                    (click)="selecionarFrete(opcao)">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-truck fs-4 text-primary"></i>
+                        <div>
+                          <p class="mb-0 fw-semibold">{{ opcao.nome }}</p>
+                          <small class="text-muted">{{ opcao.transportadora }} · {{ opcao.prazoDias }} dia(s) útil(eis)</small>
+                        </div>
+                      </div>
+                      <span class="fw-bold text-primary">{{ opcao.valor | currency:'BRL' }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Previsão de entrega -->
+              @if (freteEscolhido() && previsaoEntrega()) {
+                <div class="alert alert-success mt-3 mb-0">
+                  <i class="bi bi-calendar-check me-2"></i>
+                  <strong>Previsão de entrega:</strong> até {{ previsaoEntrega() }}
+                  <small class="d-block text-muted mt-1">Inclui o tempo de preparo + frete</small>
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Resumo do pedido -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm sticky-top" style="top: 80px;">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Resumo do pedido</h5>
+
+          @for (item of itens(); track item.produto.id) {
+            <div class="d-flex justify-content-between align-items-start mb-2 small">
+              <span class="text-muted">
+                {{ item.produto.nome }}
+                <span class="text-dark fw-semibold"> × {{ item.quantidade }}</span>
+              </span>
+              <span>{{ item.produto.preco * item.quantidade | currency:'BRL' }}</span>
+            </div>
+          }
+
+          <hr>
+
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Produtos</span>
+            <span>{{ valorProdutos() | currency:'BRL' }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-3">
+            <span class="text-muted">Frete</span>
+            <span>{{ (freteEscolhido()?.valor ?? 0) | currency:'BRL' }}</span>
+          </div>
+
+          <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+            <span>Total</span>
+            <span class="text-primary">{{ valorTotal | currency:'BRL' }}</span>
+          </div>
+
+          <button
+            class="btn btn-primary btn-lg w-100"
+            [disabled]="!formularioValido || processandoPedido()"
+            (click)="finalizarCompra()">
+            @if (processandoPedido()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Processando...
+            } @else {
+              <i class="bi bi-lock me-2"></i>Pagar com Mercado Pago
+            }
+          </button>
+
+          <p class="text-muted small text-center mt-2 mb-0">
+            <i class="bi bi-shield-check me-1"></i>Pagamento seguro
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

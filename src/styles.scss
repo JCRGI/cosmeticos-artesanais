@@ -1,0 +1,68 @@
+// Bootstrap 5 — framework CSS principal
+@use "bootstrap/scss/bootstrap";
+
+// Bootstrap Icons — ícones usados em todo o projeto
+@use "bootstrap-icons/font/bootstrap-icons.css";
+
+// ----------------------------------------------------------------
+// Variáveis globais
+// ----------------------------------------------------------------
+:root {
+  --bs-primary: #6c3fc5;       // roxo artesanal (pode ajustar)
+  --bs-primary-rgb: 108, 63, 197;
+}
+
+// ----------------------------------------------------------------
+// Estilos globais
+// ----------------------------------------------------------------
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #fff;
+  color: #212529;
+}
+
+// Cartões de produto com hover sutil
+.produto-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+// Hero section com gradiente
+.hero-section {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, #9b59b6 100%);
+}
+
+// Links sem sublinhado padrão
+a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+// Scrollbar elegante
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+// Placeholder para imagens ausentes
+img[src="assets/placeholder.jpg"] {
+  background: #f8f9fa;
+  color: #6c757d;
+}

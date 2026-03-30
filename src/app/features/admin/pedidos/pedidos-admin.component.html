@@ -1,0 +1,177 @@
+<div class="container-fluid py-4">
+  <h2 class="fw-bold mb-4">
+    <i class="bi bi-bag me-2 text-primary"></i>Pedidos
+  </h2>
+
+  <!-- Filtro por status -->
+  <div class="card border-0 shadow-sm mb-4 p-3">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small fw-semibold">Filtrar por status</label>
+        <select class="form-select" [(ngModel)]="filtroStatus" (change)="carregar()">
+          <option value="">Todos os status</option>
+          @for (s of statusOpcoes; track s) {
+            <option [value]="s">{{ statusLabels[s] }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline-secondary w-100" (click)="filtroStatus = ''; carregar()">
+          <i class="bi bi-arrow-clockwise me-1"></i>Atualizar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <app-loading [visivel]="carregando()" mensagem="Carregando pedidos..."></app-loading>
+
+  @if (!carregando()) {
+    @if (pedidos().length === 0) {
+      <div class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 mb-3 d-block"></i>
+        <p>Nenhum pedido encontrado.</p>
+      </div>
+    } @else {
+      <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Pedido</th>
+                <th>Data</th>
+                <th>Status</th>
+                <th>Frete</th>
+                <th>Previsão</th>
+                <th class="text-end">Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (pedido of pedidos(); track pedido.id) {
+                <tr>
+                  <td class="font-monospace fw-semibold">
+                    #{{ pedido.id.slice(0, 8).toUpperCase() }}
+                  </td>
+                  <td class="small text-muted">
+                    {{ pedido.createdAt | date:'dd/MM/yy HH:mm' }}
+                  </td>
+                  <td>
+                    <span class="badge bg-{{ statusColors[pedido.status] }}">
+                      {{ statusLabels[pedido.status] }}
+                    </span>
+                  </td>
+                  <td class="small">{{ pedido.metodoFrete }}</td>
+                  <td class="small">{{ pedido.previsaoEntrega | date:'dd/MM/yy' }}</td>
+                  <td class="text-end fw-semibold">{{ pedido.valorTotal | currency:'BRL' }}</td>
+                  <td>
+                    <button
+                      class="btn btn-outline-primary btn-sm"
+                      (click)="verDetalhes(pedido)">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal de detalhes -->
+@if (pedidoSelecionado()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.5);">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold">
+            Pedido #{{ pedidoSelecionado()!.id.slice(0, 8).toUpperCase() }}
+          </h5>
+          <button type="button" class="btn-close" (click)="fecharDetalhes()"></button>
+        </div>
+        <div class="modal-body px-4">
+
+          <!-- Status e alterar -->
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <span class="badge bg-{{ statusColors[pedidoSelecionado()!.status] }} fs-6 px-3 py-2">
+              {{ statusLabels[pedidoSelecionado()!.status] }}
+            </span>
+            <select
+              class="form-select form-select-sm w-auto"
+              [value]="pedidoSelecionado()!.status"
+              (change)="alterarStatus(pedidoSelecionado()!, $any($event.target).value)">
+              @for (s of statusOpcoes; track s) {
+                <option [value]="s">{{ statusLabels[s] }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Endereço -->
+          <div class="mb-4">
+            <h6 class="fw-semibold mb-2">
+              <i class="bi bi-geo-alt me-1 text-primary"></i>Endereço de entrega
+            </h6>
+            <p class="text-muted small mb-0">
+              {{ pedidoSelecionado()!.enderecoEntrega.logradouro }},
+              {{ pedidoSelecionado()!.enderecoEntrega.numero }}
+              {{ pedidoSelecionado()!.enderecoEntrega.complemento }}<br>
+              {{ pedidoSelecionado()!.enderecoEntrega.bairro }} –
+              {{ pedidoSelecionado()!.enderecoEntrega.cidade }}/{{ pedidoSelecionado()!.enderecoEntrega.estado }}<br>
+              CEP: {{ pedidoSelecionado()!.enderecoEntrega.cep }}
+            </p>
+          </div>
+
+          <!-- Itens -->
+          <h6 class="fw-semibold mb-2">
+            <i class="bi bi-box me-1 text-primary"></i>Itens
+          </h6>
+          <div class="table-responsive mb-4">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th class="text-center">Qtd</th>
+                  <th class="text-end">Preço unit.</th>
+                  <th class="text-end">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of pedidoSelecionado()!.itens ?? []; track item.id) {
+                  <tr>
+                    <td>
+                      <span class="font-monospace small">{{ item.produtoId.slice(0, 8) }}</span>
+                      @if (item.personalizacao) {
+                        <div class="mt-1">
+                          @for (entry of $any(item.personalizacao) | keyvalue; track entry.key) {
+                            <span class="badge bg-light text-dark border me-1 small">
+                              {{ entry.key }}: {{ entry.value }}
+                            </span>
+                          }
+                        </div>
+                      }
+                    </td>
+                    <td class="text-center">{{ item.quantidade }}</td>
+                    <td class="text-end">{{ item.precoUnitario | currency:'BRL' }}</td>
+                    <td class="text-end fw-semibold">{{ item.precoUnitario * item.quantidade | currency:'BRL' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Totais -->
+          <div class="d-flex flex-column gap-1 text-end small">
+            <div>Produtos: <strong>{{ pedidoSelecionado()!.valorProdutos | currency:'BRL' }}</strong></div>
+            <div>Frete ({{ pedidoSelecionado()!.metodoFrete }}): <strong>{{ pedidoSelecionado()!.valorFrete | currency:'BRL' }}</strong></div>
+            <div class="fs-5">Total: <strong class="text-primary">{{ pedidoSelecionado()!.valorTotal | currency:'BRL' }}</strong></div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button class="btn btn-secondary" (click)="fecharDetalhes()">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
