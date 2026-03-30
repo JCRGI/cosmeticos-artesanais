@@ -5,6 +5,8 @@
 
 -- Extensões necessárias
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Garantir que a extensão está disponível
+CREATE SCHEMA IF NOT EXISTS extensions;
 
 -- ============================================================
 -- ENUM: tipo de produto
@@ -27,7 +29,7 @@ CREATE TYPE status_pedido AS ENUM (
 -- TABELA: produtos
 -- ============================================================
 CREATE TABLE produtos (
-  id                  UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                  UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   nome                TEXT          NOT NULL,
   descricao           TEXT,
   tipo                tipo_produto  NOT NULL,
@@ -62,7 +64,7 @@ CREATE TRIGGER trg_produtos_updated_at
 -- Identificados por CPF ou e-mail (sem cadastro obrigatório)
 -- ============================================================
 CREATE TABLE clientes (
-  id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   cpf         TEXT        UNIQUE,       -- pode ser nulo se identificado só por e-mail
   email       TEXT        UNIQUE,       -- pode ser nulo se identificado só por CPF
   nome        TEXT        NOT NULL,
@@ -77,7 +79,7 @@ CREATE TABLE clientes (
 -- TABELA: enderecos
 -- ============================================================
 CREATE TABLE enderecos (
-  id           UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   cliente_id   UUID        NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
   cep          TEXT        NOT NULL,
   logradouro   TEXT        NOT NULL,
@@ -97,7 +99,7 @@ CREATE INDEX idx_enderecos_cliente_id ON enderecos(cliente_id);
 -- TABELA: pedidos
 -- ============================================================
 CREATE TABLE pedidos (
-  id                 UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id                 UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   cliente_id         UUID          NOT NULL REFERENCES clientes(id),
   status             status_pedido NOT NULL DEFAULT 'aguardando_pagamento',
   valor_produtos     NUMERIC(10,2) NOT NULL CHECK (valor_produtos >= 0),
@@ -126,7 +128,7 @@ CREATE TRIGGER trg_pedidos_updated_at
 -- TABELA: itens_pedido
 -- ============================================================
 CREATE TABLE itens_pedido (
-  id              UUID          PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   pedido_id       UUID          NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
   produto_id      UUID          NOT NULL REFERENCES produtos(id),
   quantidade      INT           NOT NULL CHECK (quantidade > 0),
